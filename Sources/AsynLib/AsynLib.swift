@@ -13,57 +13,55 @@ import SwiftUI
 //    }
 //}
 
-
-public class AsyncImageView: UIImageView {
-    private var currentUrl: URL?
-
-    public override init(frame: CGRect = .zero) {  // Default frame provided
-        super.init(frame: frame)
-        setupView()
+public struct AsyncImageLoader<Content: View>: View {
+    private let url: URL?
+    private let content: (Image) -> Content
+    @State private var loadedImage: Image?
+    @State private var isLoading = false
+    
+    public init(url: URL?, @ViewBuilder content: @escaping (Image) -> Content) {
+        self.url = url
+        self.content = content
     }
-
-    required init?(coder: NSCoder) {
-        super.init(coder: coder)
-        setupView()
-    }
-
-    private func setupView() {
-        self.contentMode = .scaleAspectFit
-        self.clipsToBounds = true
-    }
-
-    public func loadImage(from url: URL) {
-        self.currentUrl = url
-        self.image = nil // Clear old image
-
-        DispatchQueue.global(qos: .utility).async { [weak self] in
-            guard let data = try? Data(contentsOf: url), let image = UIImage(data: data) else { return }
-            
-            DispatchQueue.main.async {
-                if self?.currentUrl == url { // Ensure correct image is set
-                    self?.image = image
-                }
+    
+    public var body: some View {
+        VStack {
+            if isLoading {
+                ProgressView()
+                    .progressViewStyle(CircularProgressViewStyle())
+            } else if let image = loadedImage {
+                content(image)
+            } else {
+                Color.gray
+                    .overlay(
+                        Image(systemName: "photo")
+                            .foregroundColor(.white)
+                    )
             }
         }
-    }
-}
-
-
-public struct AsyncImageViewRepresentable: UIViewRepresentable {
-    let url: String
-
-    public init(url: String) {
-        self.url = url
-    }
-
-    public func makeUIView(context: Context) -> AsyncImageView {
-        let imageView = AsyncImageView()
-        return imageView
-    }
-
-    public func updateUIView(_ uiView: AsyncImageView, context: Context) {
-        if let imageUrl = URL(string: url) {
-            uiView.loadImage(from: imageUrl)
+        .task {
+            await loadImage()
         }
+    }
+    
+    private func loadImage() async {
+        guard let url = url else { return }
+        
+        isLoading = true
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            #if os(iOS)
+            if let uiImage = UIImage(data: data) {
+                loadedImage = Image(uiImage: uiImage)
+            }
+            #elseif os(macOS)
+            if let nsImage = NSImage(data: data) {
+                loadedImage = Image(nsImage: nsImage)
+            }
+            #endif
+        } catch {
+            print("Error loading image: \(error)")
+        }
+        isLoading = false
     }
 }
