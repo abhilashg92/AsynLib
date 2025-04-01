@@ -17,7 +17,7 @@ import SwiftUI
 public class AsyncImageView: UIImageView {
     private var currentUrl: URL?
 
-    public override init(frame: CGRect) {
+    public override init(frame: CGRect = .zero) {  // Default frame provided
         super.init(frame: frame)
         setupView()
     }
@@ -35,8 +35,8 @@ public class AsyncImageView: UIImageView {
     public func loadImage(from url: URL) {
         self.currentUrl = url
         self.image = nil // Clear old image
-        
-        DispatchQueue.global(qos: .background).async { [weak self] in
+
+        DispatchQueue.global(qos: .utility).async { [weak self] in
             guard let data = try? Data(contentsOf: url), let image = UIImage(data: data) else { return }
             
             DispatchQueue.main.async {
