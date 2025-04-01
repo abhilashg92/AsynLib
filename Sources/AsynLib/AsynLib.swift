@@ -5,7 +5,7 @@ import UIKit
 
 public struct MyPakage
 {
-    func sayHello() -> String{
+    public func sayHello() -> String{
        return "Hello world!"
     }
 }
