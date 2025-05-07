@@ -10,7 +10,7 @@ public struct AsyncImageLoader<Content: View>: View {
     private let content: (Image) -> Content
     @State private var loadedImage: Image?
     @State private var isLoading = false
-    @Dependency (\.weatherClient) var weatherClient
+    @Dependency(\.weatherClient) var weatherClient
     
     public init(url: URL?, @ViewBuilder content: @escaping (Image) -> Content) {
         self.url = url
@@ -83,7 +83,7 @@ extension DependencyValues {
 }
 
 
-struct WeatherClient : Sendable {
+public struct WeatherClient : Sendable {
     var fetchCurrentTemperature: @Sendable () async throws -> Double
 }
 
