@@ -84,7 +84,7 @@ public extension DependencyValues {
 
 
 public struct WeatherClient : Sendable {
-    var fetchCurrentTemperature: @Sendable () async throws -> Double
+    public var fetchCurrentTemperature: @Sendable () async throws -> Double
 }
 
 
