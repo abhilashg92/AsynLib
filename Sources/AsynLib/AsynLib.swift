@@ -3,21 +3,14 @@
 
 import UIKit
 import SwiftUI
-
-//
-//public struct MyPakage
-//{
-//    public init() {}
-//    public func sayHello() -> String{
-//       return "Hello world!"
-//    }
-//}
+import Dependencies
 
 public struct AsyncImageLoader<Content: View>: View {
     private let url: URL?
     private let content: (Image) -> Content
     @State private var loadedImage: Image?
     @State private var isLoading = false
+    @Dependency (\.weatherClient) var weatherClient
     
     public init(url: URL?, @ViewBuilder content: @escaping (Image) -> Content) {
         self.url = url
@@ -44,9 +37,16 @@ public struct AsyncImageLoader<Content: View>: View {
         }
     }
     
-    private func loadImage() async {
-        guard let url = url else { return }
-        
+     func loadImage() async {
+        guard let url = url else {
+            return
+        }
+         do {
+             let temperature = try await weatherClient.fetchCurrentTemperature()
+             print("Current temperature in Pune: \(temperature)°C")
+         } catch {
+             print("Failed to fetch temperature: \(error)")
+         }
         isLoading = true
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
@@ -64,4 +64,30 @@ public struct AsyncImageLoader<Content: View>: View {
         }
         isLoading = false
     }
+}
+
+private enum WeatherClientKey: DependencyKey {
+    static let liveValue = WeatherClient(
+        fetchCurrentTemperature: {
+            // Replace with actual implementation
+            return 28.0
+        }
+    )
+}
+
+extension DependencyValues {
+    var weatherClient: WeatherClient {
+        get { self[WeatherClientKey.self] }
+        set { self[WeatherClientKey.self] = newValue }
+    }
+}
+
+
+struct WeatherClient : Sendable {
+    var fetchCurrentTemperature: @Sendable () async throws -> Double
+}
+
+
+struct WeatherResponse: Decodable {
+    let temperature: Double
 }

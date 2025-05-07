@@ -12,11 +12,18 @@ let package = Package(
             name: "AsynLib",
             targets: ["AsynLib"]),
     ],
+    dependencies: [
+        .package(url: "https://github.com/pointfreeco/swift-dependencies", from: "1.0.0")
+    ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
         // Targets can depend on other targets in this package and products from dependencies.
         .target(
-            name: "AsynLib"),
+            name: "AsynLib",
+            dependencies: [
+                     .product(name: "Dependencies", package: "swift-dependencies")
+                 ]
+        ),
         .testTarget(
             name: "AsynLibTests",
             dependencies: ["AsynLib"]
