@@ -66,8 +66,8 @@ public struct AsyncImageLoader<Content: View>: View {
     }
 }
 
-private enum WeatherClientKey: DependencyKey {
-    static let liveValue = WeatherClient(
+public enum WeatherClientKey: DependencyKey {
+    public static let liveValue = WeatherClient(
         fetchCurrentTemperature: {
             // Replace with actual implementation
             return 28.0
@@ -75,7 +75,7 @@ private enum WeatherClientKey: DependencyKey {
     )
 }
 
-extension DependencyValues {
+public extension DependencyValues {
     var weatherClient: WeatherClient {
         get { self[WeatherClientKey.self] }
         set { self[WeatherClientKey.self] = newValue }
@@ -88,6 +88,6 @@ public struct WeatherClient : Sendable {
 }
 
 
-struct WeatherResponse: Decodable {
+public struct WeatherResponse: Decodable {
     let temperature: Double
 }
